@@ -3,6 +3,11 @@
 namespace AcronisLabs
 {
 
+	SpinWait::SpinWait()
+	{
+		CurNIter = std::min(kMaxIterations, estimate * 2 + 10);
+	}
+
 	void SpinWait::operator()()
 	{
 		ExponentialSmoothingSpin();
@@ -10,18 +15,15 @@ namespace AcronisLabs
 
 	void SpinWait::ExponentialSmoothingSpin()
 	{
-		int CurNIter = std::min(kMaxIterations, estimate * 2 + 10);
-		int SpinIp{ 0 };
-		/*Strange implementation of spinning ;( */
-		while (true)
+		if (SpinIp == CurNIter)
 		{
-			if (++SpinIp == CurNIter)
-			{
-				std::this_thread::yield();
-				break;
-			}
-			SpinLockPause();
+			std::this_thread::yield();
+			estimate += (CurNIter - estimate) / ReverseSmoothingFactor;
+			CurNIter = std::min(kMaxIterations, estimate * 2 + 10);
+			SpinIp = 0;
+			return;
 		}
-		estimate += (CurNIter - estimate) / ReverseSmoothingFactor;
+		SpinLockPause();
+		++SpinIp;
 	}
 }

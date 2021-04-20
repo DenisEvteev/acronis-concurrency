@@ -9,8 +9,8 @@ namespace AcronisLabs
 	{
 		struct MCSNode
 		{
-			MCSNode* next_{ nullptr };
-			bool locked_{ false };
+			std::atomic<MCSNode*> next_{ nullptr };
+			std::atomic<bool> locked_{ false };
 		};
 	 public:
 		class Guard

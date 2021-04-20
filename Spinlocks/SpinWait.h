@@ -23,10 +23,13 @@ using modern hardware.
 	class SpinWait
 	{
 	 public:
+		SpinWait();
 		void operator()();
 	 private:
 		void ExponentialSmoothingSpin();
 		int estimate{ 0 };
+		int SpinIp{ 0 };
+		int CurNIter;
 
 	};
 
