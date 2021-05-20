@@ -1,62 +1,42 @@
 #include <gtest/gtest.h>
-#include <chrono>
-#include <thread>
+#include <mutex>
+
+#include "../unit_test.hpp"
 #include "TicketLock.h"
 
 using namespace AcronisLabs;
 
-TEST(Ticket, SimpleTest)
-{
-	TicketLock lock;
-	lock.Lock();
-	lock.Unlock();
+TEST(TTAS, JustWork) {
+  TesterSpinlock<TicketLock> spinlock;
+  spinlock.JustWork();
 }
 
-TEST(Ticket, TwoLocks)
-{
-	TicketLock lock;
-
-	lock.Lock();
-	lock.Unlock();
-
-	lock.Lock();
-	lock.Unlock();
-
+TEST(TTAS, TwoLocks) {
+  TesterSpinlock<TicketLock> spinlock;
+  spinlock.TwoLocks();
 }
 
-TEST(Ticket, ThreadsIncreaseCounters)
-{
-	const size_t kIterations = 1000;
-	TicketLock ticketLock;
-	size_t shared_counter = 0;
-
-	auto test = [&]()
-	{
-	  for (size_t i = 0; i < kIterations; ++i)
-	  {
-		  ticketLock.Lock();
-		  size_t current = shared_counter;
-		  std::this_thread::sleep_for(
-			  std::chrono::milliseconds(10));
-		  shared_counter = current + 1;
-		  ticketLock.Unlock();
-	  }
-	};
-
-	const size_t kThreads = 5;
-	std::vector<std::thread> pool;
-	for (int i = 0; i < kThreads; ++i)
-	{
-		pool.emplace_back(test);
-	}
-
-	for (auto& el: pool)
-		el.join();
-	ASSERT_EQ(shared_counter, kIterations * kThreads);
+TEST(TTAS, BigNumberOfThreads) {
+  TesterSpinlock<TicketLock> spinlock;
+  auto res = spinlock.ThreadsIncreaseCounters(1000, 10);
+  ASSERT_EQ(res, 1000 * 10);
 }
 
-int main(int argc, char** argv)
-{
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+TEST(TTAS, BenchAverageTime_Threads) {
+  TesterSpinlock<TicketLock> spinlock;
+  double sum = 0.0;
+  std::cout << "###Evaluation started:###" << std::endl;
+  std::mutex guard;
+  double max = std::numeric_limits<double>::min();
+  for (int i = 10; i < 100; i += 10) {
+	spinlock.MaxTimeLockUnlock(i, i * 100, sum, guard, max);
+	std::cout << "#" << i << " threads - " << (sum / i) * 10000 << " seconds" << " max " << max * 10000 << std::endl;
+	sum = 0;
+	max = std::numeric_limits<double>::min();
+  }
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

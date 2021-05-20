@@ -14,16 +14,14 @@
  * iiii: exponential smoothing loop precision
  * */
 
-namespace AcronisLabs
-{
+namespace AcronisLabs {
 
-	class TTASSpinlock
-	{
-	 public:
-		void Lock();
-		void Unlock();
-	 private:
-		std::atomic<bool> lock_{ false };
-	};
+class TTASSpinlock {
+ public:
+  void Lock();
+  void Unlock();
+ private:
+  std::atomic<bool> lock_{false};
+};
 
 } // namespace AcronisLabs

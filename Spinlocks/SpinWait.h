@@ -3,8 +3,7 @@
 #include <thread>
 #include <algorithm>
 
-namespace AcronisLabs
-{
+namespace AcronisLabs {
 /* i) The choice of 100 spins for the default spin count
 is a completely arbitrary choice that has not been evaluated thoroughly
 using modern hardware.
@@ -14,23 +13,20 @@ using modern hardware.
 #define kMaxIterations 100
 #define ReverseSmoothingFactor 8
 
-	static inline void SpinLockPause()
-	{
-		asm volatile("pause\n" : : : "memory");
-	}
+static inline void SpinLockPause() {
+  asm volatile("pause\n" : : : "memory");
+}
 
-//TODO: add some other options how to perform efficient spinning
-	class SpinWait
-	{
-	 public:
-		SpinWait();
-		void operator()();
-	 private:
-		void ExponentialSmoothingSpin();
-		int estimate{ 0 };
-		int SpinIp{ 0 };
-		int CurNIter;
+class SpinWait {
+ public:
+  SpinWait();
+  void operator()();
+ private:
+  void ExponentialSmoothingSpin();
+  size_t kIters = 0;
+  size_t estimate = 0;
+  size_t curNIter;
 
-	};
+};
 
 }

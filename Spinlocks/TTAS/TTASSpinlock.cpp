@@ -1,23 +1,19 @@
 #include "TTASSpinlock.hpp"
 
-namespace AcronisLabs
-{
+namespace AcronisLabs {
 
-	void TTASSpinlock::Lock()
-	{
-		SpinWait spinWait;
-		while (lock_.exchange(true, std::memory_order_acquire))
-		{
-			do
-			{
-				spinWait();
-			} while (lock_.load(std::memory_order_acquire));
-		}
+void TTASSpinlock::Lock() {
+  SpinWait spin_wait;
+  while (lock_.exchange(true, std::memory_order_acquire)) {
+	do {
+	  spin_wait();
+	} while (lock_.load(std::memory_order_acquire));
+  }
 
-	}
-	void TTASSpinlock::Unlock()
-	{
-		lock_.store(false, std::memory_order_release);
-	}
+}
+
+void TTASSpinlock::Unlock() {
+  lock_.store(false, std::memory_order_release);
+}
 
 } //namespace AcronisLabs
